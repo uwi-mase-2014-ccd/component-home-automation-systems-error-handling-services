@@ -56,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				echo "fail";// Exception for no data/message
 	}
 
+<<<<<<< HEAD
 } else {
 
 echo "fail";
@@ -67,6 +68,22 @@ echo "fail";
 				'message' => 'This service only accepts a POST Request.'
 			)
 		);
+=======
+
+
+
+	} else {
+
+	echo "fail";
+		$response = array(
+				'code' => 400,
+				'data' => new stdClass,
+				'debug' => array(
+					'data' => new stdClass,
+					'message' => 'This service only accepts a POST Request.'
+				)
+			);
+>>>>>>> a9eb2b6ba6e5f6df96d612f493874c7cff32bb37
 }
 // In every scenario a $response object is produced - return it.
 echo json_encode($response);
