@@ -16,19 +16,30 @@ Logging services.
 ##Services
 + Error Logging Web Service
 	<insert description of service.>
+	The Error Logging web service was created to integrate with other web services to allow other applications to handler errors.
 
 
 ###Endpoint
-+ Error Logging : 
++ Error Logging : \<serverAddress\>/errorLogging/error.php
 
 ###Arguments
 + Error Logging 
 	<insert args>
-	
+	+ message: 
+		This arguement refers to a comprehensive summary of the error in human readable text that will be displayed in the logs.
+
+	+ metadata: 
+		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters: \n
+			**description**: 
+				A more detailed description of the error. This is where machine generated error codes should go.\n
+			**component**:
+				The component/application that posted the error
+
 	
 ###Description:
 + Error Logging
 <insert description of the functionality provided by the error logging web service>
+	This web service currently integrates with PaterTrail - an external log archiving service.
 
 ###Success Schema:
 <A reference to a schema defined using JSONSchema maintained in the 
