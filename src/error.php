@@ -1,5 +1,5 @@
 <?php
-
+echo "1";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	// Remote system logging.
 	// TODO: replace with classmates logging api using Guzzle for HTTP requests.
@@ -18,25 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 	if (isset($_POST['message'] )) { // && isset['data'])
 
 		$message = $_POST['message'];
+		echo "2";
 		$metadata = $_POST['metadata'];
 
 		// Json parsing.
 		$obj = json_decode($metadata, true);
 		$description = $obj['description'];
 		$component = $obj['component'];
-
-		try{
-			// Log the Error.
- 			send_remote_syslog($message);
+		echo $component;
+	 	try{
+	// 		// Log the Error.
+  			send_remote_syslog($message);
 
 			$response = array(
 				'code' => 200,
-				'status': 'Success'
-				),
-				'debug' => new stdClass
+				'message' => "Success"
+				// ),
+				// 'debug' => new stdClass
 			);
 
-  	} catch (Exception $e) {
+   	} catch(Exception $e) {
   		$response = array(
 				'code' => 503,
 				'data' => new stdClass,
@@ -48,34 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 				)
 			);
 
-  	}
+   	}
 
 	} else {
 
 				// TODO: Replace with appropriate json schema.
 				echo "fail";// Exception for no data/message
-	}
+	 }
 
-<<<<<<< HEAD
-} else {
-
-echo "fail";
-	$response = array(
-			'code' => 400,
-			'data' => new stdClass,
-			'debug' => array(
-				'data' => new stdClass,
-				'message' => 'This service only accepts a POST Request.'
-			)
-		);
-=======
 
 
 
 	} else {
 
-	echo "fail";
-		$response = array(
+			$response = array(
 				'code' => 400,
 				'data' => new stdClass,
 				'debug' => array(
@@ -83,9 +70,8 @@ echo "fail";
 					'message' => 'This service only accepts a POST Request.'
 				)
 			);
->>>>>>> a9eb2b6ba6e5f6df96d612f493874c7cff32bb37
 }
 // In every scenario a $response object is produced - return it.
-echo json_encode($response);
+ echo json_encode($response);
 
 ?>
