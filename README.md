@@ -20,7 +20,7 @@ Logging services.
 
 
 ###Endpoint
-+ Error Logging : \<serverAddress\>/errorLogging/error.php
++ Error Logging : http:uwi-has.appspot.com/v1/error/
 
 ###Arguments
 + Error Logging 
