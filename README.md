@@ -33,8 +33,7 @@ Logging services.
 			**description**: 
 				A more detailed description of the error. This is where machine generated error codes should go.\n
 			**component**:
-				The component/application that posted the error
-
+		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters:
 	
 ###Description:
 + Error Logging
