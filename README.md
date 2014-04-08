@@ -20,7 +20,7 @@ Logging services.
 
 
 ###Endpoint
-+ Error Logging : http:uwi-has.appspot.com/v1/error/
++ Error Logging : http://uwi-has.appspot.com/v1/error/
 
 ###Arguments
 + Error Logging 
