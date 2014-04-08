@@ -29,9 +29,11 @@ Logging services.
 		This arguement refers to a comprehensive summary of the error in human readable text that will be displayed in the logs.
 
 	+ metadata: 
-		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters: \n
+		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters:  
+		
 			**description**: 
-				A more detailed description of the error. This is where machine generated error codes should go.\n
+				A more detailed description of the error. This is where machine generated error codes should go.  
+
 			**component**:
 		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters:
 	
