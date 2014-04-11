@@ -12,6 +12,14 @@ try {
 	require 'vendor/autoload.php';
 
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+		// Parse JSON Request
+		$inputJSON = file_get_contents('php://input');
+		$data = json_decode( $inputJSON, TRUE ); //convert JSON into array
+	
+		if ($data !== NULL) {
+			$_POST = $data;
+		}
+	
 		// Remote system logging.
 		// TODO: replace with classmates logging api using Guzzle for HTTP requests.- Replaced with custom php http POST(post_req(args*))
 		function send_remote_syslog($message, $component = 'HomeAutomationSystem', $program = 'ERR')
@@ -29,13 +37,13 @@ try {
 		function post_req($message)
 		{
 			$RESQUEST_BODY = array(
-				"dbPort" 		=> 3306,
+				"dbPort" 		=> '3306',
 				"dbHost" 		=> "ticketmanager.mysoftware.io",
 				"dbPassword" 	=> "password",
 				"dbName" 		=> "projecthas",
 				"dbUsername"	=> "projecthas-db",
 			
-				"eventId" 		=> 5,
+				"eventId" 		=> '5',
 				"userName" 		=> "projecthas-error",
 				"comment" 		=> $message
 			);
@@ -45,13 +53,15 @@ try {
 			$client = new Client();
 
 			// Send request to DB Component
-			$res = $client->post($AUTING_ENDPOINT, array(
-				'body' => $RESQUEST_BODY
+			$res = $client->post($AUTING_ENDPOINT . '?jsondata=' . json_encode($RESQUEST_BODY), array(
+				'body' => array()
 			));
 		
 		
 			if (isset($_GET['_debug'])) {
 				var_dump($res);
+				
+				var_dump(array('body' => (string)$res->getBody()));
 			}
 		
 			// Check if it succeeded
@@ -79,7 +89,7 @@ try {
 		
 			if (isset($_POST['metadata'])) {
 				$metadata = $_POST['metadata'];
-				$message = $message . '\n Metadata: ' . json_encode($medata, JSON_PRETTY_PRINT);
+				$message = $message . '\n Metadata: ' . json_encode($metadata, JSON_PRETTY_PRINT);
 			}
 		
 			send_remote_syslog($message);
@@ -88,6 +98,7 @@ try {
 				$response = array(
 					'code' => 200,
 					'data' => array(
+						'error-logged' => $message,
 						'message' => "Success"
 					),
 					'debug' => new stdClass
@@ -123,11 +134,6 @@ try {
 			)
 		);
 	}
-	// In every scenario a $response object is produced - return it.
-	echo json_encode($response);
-	// http://uwicsc.jacxtech.com/Auditing/Audit/
-	// { "dbHost":"localhost", "dbPassword":"password", "eventId":5, "dbName":"errorlog", "userName":"HASerroe", "comment":"User Crisp Technologies registered with username jcarey.", "dbUsername":"root", "dbPort":3306  }
-
 } catch (Exception $e) {
 	$response = array(
 		'code' => 500,
@@ -135,8 +141,14 @@ try {
 		'debug' => array(
 			'data' => array(
 				'Caught exception: ' => $e->getMessage(),
+				'trace'=> $e->getTrace()
 			),
 			'message' => 'An exception has occured.'
 		)
 	);
 }
+
+// In every scenario a $response object is produced - return it.
+echo json_encode($response, JSON_PRETTY_PRINT);
+// http://uwicsc.jacxtech.com/Auditing/Audit/
+// { "dbHost":"localhost", "dbPassword":"password", "eventId":5, "dbName":"errorlog", "userName":"HASerroe", "comment":"User Crisp Technologies registered with username jcarey.", "dbUsername":"root", "dbPort":3306  }
