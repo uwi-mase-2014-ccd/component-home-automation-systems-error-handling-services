@@ -1,53 +1,118 @@
-Project H.A.S Component - Error Handling Documentation
-------------------------------------------------
+Project H.A.S Component Documentation - Error Handling Component
+-----------------------------------------------------------------
+Author Group: **Home Automation Systems**
+
 Prepared for: Dr. Curtis Busby-Earle
 
 Prepared by: Aston Hamilton, Renee Whitelocke, Orane Edwards
 
 March 18, 2014
 
-Version number: 000-0001
+Version number: 000-0002
 
 
 ##Component Description
-The purpose of this component is to provide a client with Error
-Logging services.
+The purpose of this component is to allow other components to log application specific errors. 
+This component uses the functionality from the Auditing component that was built by the **Motor Vehicle Registration System** team.
+
+Note: The `message` and `metadata` input to this component is combined and mapped to the `comment` input of the Auditing component.
+
+    Auditing component: https://github.com/uwi-mase-2014-ccd/component-motor-vehicle-registration-system-auditing-services
+
 
 ##Services
-+ Error Logging Web Service
-	<insert description of service.>
-	The Error Logging web service was created to integrate with other web services to allow other applications to handler errors.
-
+The _Error Logging_ web service is exposed by this component.
 
 ###Endpoint
-+ Error Logging :POST http://uwi-has.appspot.com/v1/error/
+This component has been deployed to the UWI server at the endpoint: 
+
+    POST http://cs-proj-srv:8083/service-error-logging/error.php
 
 ###Arguments
-+ Error Logging 
-	<insert args>
-	+ message: 
-		This arguement refers to a comprehensive summary of the error in human readable text that will be displayed in the logs.
+    message: 
+        This arguement refers to a comprehensive summary of the error in human readable text that will be displayed in the logs.
 
-	+ metadata: 
-		This argument refers to other metadata associated with the error. This is accepted in JSON format with parameters:  
+    metadata: 
+        This argument refers to other metadata associated with the error. This parameter is optional and can contain any fields and be of any valid datatype the user wants. Valid datatypes are determined by the encodeing used for the request body. Both application/json and url-form-encoded are supported by this service.
 
-			description: 
-				A more detailed description of the error. This is where machine generated error codes should go.  
-
-			component:
-				The component/application that posted the error.
-	
+    
 ###Description:
-+ Error Logging
-<insert description of the functionality provided by the error logging web service>
-	This web service currently integrates with PaterTrail - an external log archiving service.
+Error Logging
+    This web service will convert the metadata inputed to a JSON string and append it to the inputted message.
+    It then calls the service exposed by the Auditing component to store the comound message in the autiding database.
 
-###Success Schema:
-<A reference to a schema defined using JSONSchema maintained in the 
-‘schema’ folder of the repository that maintains the subject component component.
- This schema shall define the expected data payload when this service returns an HTTP 200.>
+###Responses:
+####Error Successfully Logged
+If the error is successfully logged, a response similar to the following sample response is returned:
+```javascript    
+{
+    "code": 200,
+    "data": {
+        "error-logged": "test-log\\n Metadata: \"test\"",
+        "message": "Success"
+    },
+    "debug": {}
+}
+```
+    Refer to schema: response-200.json
 
+####Error Unsuccessfully Logged
+If the error cannot be logged because the Auditing component is not working as expected, a response similar to the following sample response is returned:
+```javascript    
+{
+    "code": 500,
+    "data": {
 
+    },
+    "debug": {
+        "data": {
 
-	
-	
+        },
+        "message": "The request to the auditing component failed."
+    }
+}
+```
+    Refer to schema: response-500.json
+
+####Invalid HTTP Method
+On An Invalid HTTP Method a response similar to the following sample response is returned:
+```javascript
+{
+    "code": 400,
+    "data": {},
+    "debug": {
+        "data": {},
+        "message": "This service only accepts a POST Request."
+    }
+}
+```
+    Refer to schema: response-400.json
+    
+####Missing Arguments
+If a required argument is not submitted, a response similar to the following sample response is returned:
+```javascript
+{
+    "code": 400,
+    "data": {},
+    "debug": {
+        "data": {},
+        "message": "Incorrect request parameters. Required Parameters [message], Optional Parameters [metadata]"
+    }
+}
+```
+    Refer to schema: response-400.json
+    
+####Unexpected Error
+On Any Unexpected Error a response similar to the following sample response is returned:
+```javascript
+{
+    "code": 500,
+    "data": {},
+    "debug": {
+        "data": {},
+        "message": "An exception has occured"
+    }
+}
+```
+    Refer to schema: response-500.json
+

@@ -140,8 +140,7 @@ try {
 		'data' => new stdClass,
 		'debug' => array(
 			'data' => array(
-				'Caught exception: ' => $e->getMessage(),
-				'trace'=> $e->getTrace()
+				'Caught exception: ' => $e->getMessage()
 			),
 			'message' => 'An exception has occured.'
 		)
