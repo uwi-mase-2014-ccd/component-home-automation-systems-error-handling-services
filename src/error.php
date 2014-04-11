@@ -1,110 +1,142 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Remote system logging.
-    // TODO: replace with classmates logging api using Guzzle for HTTP requests.- Replaced with custom php http POST(post_req(args*))
-    function send_remote_syslog($message, $component = 'HomeAutomationSystem', $program = 'ERR')
-    {
-        $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-        foreach (explode('\n', $message) as $line) {
-            $syslog_message = '<22>' . date('M d H:i:s ') . $program . ' ' . $component . ': ' . $line;
-            
-            // Actually log to papertrail on assigned port 57238.
-            socket_sendto($sock, $syslog_message, strlen($syslog_message), 0, 'logs.papertrailapp.com', 57238);
-        }
-        socket_close($sock);
-    }
-    function post_req($message, $component, $description)
-    {
-        
-        $url  = 'http://uwicsc.jacxtech.com/Auditing/Audit/';
-        $data = array(
-            'jsondata' => "{  'dbHost':'localhost',
-                                'dbPassword':'password',
-                                'eventId':5,
-                                'dbName':'errorlog',
-                                'userName':'HAS_Error_Log',
-                                'comment':'$message',
-                                'dbUsername':'root', 'dbPort':3306  }"
-        );
-        
-        // use key 'http' even if you send the request to https://...
-        $options = array(
-            'http' => array(
-                'header' => 'Content-type: application/x-www-form-urlencoded',
-                'method' => 'POST',
-                'content' => http_build_query($data)
-            )
-        );
-        $context = stream_context_create($options);
-        $result  = file_get_contents($url, false, $context);
-        //echo json_encode($data);
-        //echo $result;
-        
-    }
-    
-    if (isset($_POST['message']) && isset($_POST['metadata'])) { // && isset['data'])
-        
-        $message  = $_POST['message'];
-        $metadata = $_POST['metadata'];
-        
-        // Json parsing.
-        $obj         = json_decode($metadata, true);
-        $description = $obj['description'];
-        $component   = $obj['component'];
-        // echo $component;
-        try {
-            //    // Log the Error.
-            send_remote_syslog($message, $component);
-            post_req($message, $component);
-            
-            $response = array(
-                'code' => 200,
-                'message' => "Success"
-                // ),
-                // 'debug' => new stdClass
-            );
-            
-        }
-        catch (Exception $e) {
-            $response = array(
-                'code' => 503,
-                'data' => new stdClass,
-                'debug' => array(
-                    'data' => array(
-                        'Caught exception: ' => $e->getMessage()
-                    ),
-                    'message' => 'An exception has occured.'
-                )
-            );
-            
-        }
-        
-    } else {
-        // Exception for no data/message
-        $response = array(
-            'code' => 400,
-            'data' => new stdClass,
-            'debug' => array(
-                'data' => new stdClass,
-                'message' => 'Incorrect request parameters. Required Parameters [message, metadata]'
-            )
-        );
-    }
-    
-    
-} else {
-    
-    $response = array(
-        'code' => 400,
-        'data' => new stdClass,
-        'debug' => array(
-            'data' => new stdClass,
-            'message' => 'This service only accepts a POST Request.'
-        )
-    );
+
+use GuzzleHttp\Client;
+
+try {
+	ini_set("display_errors", 1);
+	ini_set("track_errors", 1);
+	ini_set("html_errors", 1);
+	error_reporting(E_ALL);
+
+	require 'vendor/autoload.php';
+
+	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+		// Remote system logging.
+		// TODO: replace with classmates logging api using Guzzle for HTTP requests.- Replaced with custom php http POST(post_req(args*))
+		function send_remote_syslog($message, $component = 'HomeAutomationSystem', $program = 'ERR')
+		{
+			$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+			foreach (explode('\n', $message) as $line) {
+				$syslog_message = '<22>' . date('M d H:i:s ') . $program . ' ' . $component . ': ' . $line;
+			
+				// Actually log to papertrail on assigned port 57238.
+				socket_sendto($sock, $syslog_message, strlen($syslog_message), 0, 'logs.papertrailapp.com', 57238);
+			}
+			socket_close($sock);
+		}
+	
+		function post_req($message)
+		{
+			$RESQUEST_BODY = array(
+				"dbPort" 		=> 3306,
+				"dbHost" 		=> "ticketmanager.mysoftware.io",
+				"dbPassword" 	=> "password",
+				"dbName" 		=> "projecthas",
+				"dbUsername"	=> "projecthas-db",
+			
+				"eventId" 		=> 5,
+				"userName" 		=> "projecthas-error",
+				"comment" 		=> $message
+			);
+		
+			$AUTING_ENDPOINT = 'http://uwicsc.jacxtech.com/Auditing/Audit/';
+		
+			$client = new Client();
+
+			// Send request to DB Component
+			$res = $client->post($AUTING_ENDPOINT, array(
+				'body' => $RESQUEST_BODY
+			));
+		
+		
+			if (isset($_GET['_debug'])) {
+				var_dump($res);
+			}
+		
+			// Check if it succeeded
+			if ($res->getStatusCode() == 200) {
+				$body = $res->getBody();
+				$body = json_decode($body, TRUE);
+		
+				if ($body == NULL || !isset($body['code'])) {
+					return FALSE;
+				}
+			
+				if ($body['code'] == 200) {
+					return TRUE;
+				}
+			
+				return FALSE;
+			} else {
+				return FALSE;
+			}
+		}
+	
+		if (isset($_POST['message'])) { // && isset['data'])
+		
+			$message  = $_POST['message'];
+		
+			if (isset($_POST['metadata'])) {
+				$metadata = $_POST['metadata'];
+				$message = $message . '\n Metadata: ' . json_encode($medata, JSON_PRETTY_PRINT);
+			}
+		
+			send_remote_syslog($message);
+			$loggedToAuditing = post_req($message);
+			if ($loggedToAuditing) {
+				$response = array(
+					'code' => 200,
+					'data' => array(
+						'message' => "Success"
+					),
+					'debug' => new stdClass
+				);
+			} else {
+				$response = array(
+					'code' => 500,
+					'data' => new stdClass,
+					'debug' => array(
+						'data' => new stdClass,
+						'message' => 'The request to the auditing component failed.'
+					)
+				);
+			}
+		} else {
+			// Exception for no data/message
+			$response = array(
+				'code' => 400,
+				'data' => new stdClass,
+				'debug' => array(
+					'data' => new stdClass,
+					'message' => 'Incorrect request parameters. Required Parameters [message], Optional Parameters [metadata]'
+				)
+			);
+		}
+	} else {
+		$response = array(
+			'code' => 400,
+			'data' => new stdClass,
+			'debug' => array(
+				'data' => new stdClass,
+				'message' => 'This service only accepts a POST Request.'
+			)
+		);
+	}
+	// In every scenario a $response object is produced - return it.
+	echo json_encode($response);
+	// http://uwicsc.jacxtech.com/Auditing/Audit/
+	// { "dbHost":"localhost", "dbPassword":"password", "eventId":5, "dbName":"errorlog", "userName":"HASerroe", "comment":"User Crisp Technologies registered with username jcarey.", "dbUsername":"root", "dbPort":3306  }
+
+} catch (Exception $e) {
+	$response = array(
+		'code' => 500,
+		'data' => new stdClass,
+		'debug' => array(
+			'data' => array(
+				'Caught exception: ' => $e->getMessage(),
+			),
+			'message' => 'An exception has occured.'
+		)
+	);
 }
-// In every scenario a $response object is produced - return it.
-echo json_encode($response);
-// http://uwicsc.jacxtech.com/Auditing/Audit/
-// { "dbHost":"localhost", "dbPassword":"password", "eventId":5, "dbName":"errorlog", "userName":"HASerroe", "comment":"User Crisp Technologies registered with username jcarey.", "dbUsername":"root", "dbPort":3306  }
