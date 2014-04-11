@@ -89,7 +89,7 @@ try {
 		
 			if (isset($_POST['metadata'])) {
 				$metadata = $_POST['metadata'];
-				$message = $message . '\n Metadata: ' . json_encode($metadata, JSON_PRETTY_PRINT);
+				$message = $message . "\n Metadata: " . json_encode($metadata, JSON_PRETTY_PRINT);
 			}
 		
 			send_remote_syslog($message);

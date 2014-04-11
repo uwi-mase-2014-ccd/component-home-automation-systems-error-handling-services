@@ -15,7 +15,7 @@ Version number: 000-0002
 The purpose of this component is to allow other components to log application specific errors. 
 This component uses the functionality from the Auditing component that was built by the **Motor Vehicle Registration System** team.
 
-Note: The `message` and `metadata` input to this component is combined and mapped to the `comment` input of the Auditing component.
+Note: The `message` and `metadata` input to this component are combined and mapped to the `comment` input of the Auditing component.
 
     Auditing component: https://github.com/uwi-mase-2014-ccd/component-motor-vehicle-registration-system-auditing-services
 
@@ -26,7 +26,13 @@ The _Error Logging_ web service is exposed by this component.
 ###Endpoint
 This component has been deployed to the UWI server at the endpoint: 
 
-    POST http://cs-proj-srv:8083/service-error-logging/error.php
+    POST http://cs-proj-srv:8083/component-error-logging/src/error.php
+
+This component has been deployed to a public server at the endpoint: 
+
+    POST http://ticketmanager.mysoftware.io:8100/component-error-logging/src/error.php
+
+Note: The UWI Server deployment will not work at the moment because the auditing component is not hosted on the UWI server
 
 ###Arguments
     message: 
@@ -61,13 +67,9 @@ If the error cannot be logged because the Auditing component is not working as e
 ```javascript    
 {
     "code": 500,
-    "data": {
-
-    },
+    "data": {},
     "debug": {
-        "data": {
-
-        },
+        "data": {},
         "message": "The request to the auditing component failed."
     }
 }
